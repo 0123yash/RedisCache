@@ -1,0 +1,350 @@
+package features;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.json.JSONArray;
+
+import com.google.gson.JsonArray;
+import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.cluster.RedisClusterClient;
+import com.lambdaworks.redis.cluster.api.StatefulRedisClusterConnection;
+import com.lambdaworks.redis.cluster.api.sync.RedisAdvancedClusterCommands;
+import com.lambdaworks.redis.codec.RedisCodec;
+
+public class LettuceCluster {
+	
+	public static List<String> listOfMsid = null;
+	public static String FOLDER_LOCATION = "/Users/yash.dalmia/TIL/Webro/MyTimes/MSID100list>20";
+	public static String URL = "http://192.168.36.102/mytimes/getFeed/Activity?curpg=1&appkey=TOI&sortcriteria=CreationDate&order=asc&size=30&pagenum=1&withReward=false&alternate=true&msid=";
+	public static String[] redisURLs = {"192.168.27.158:7000","192.168.27.158:7001", "192.168.27.158:7002", "192.168.27.158:7003", "192.168.27.158:7004", "192.168.27.158:7005", "192.168.27.158:7006"};
+	static{
+		 listOfMsid = ServiceLayer.readFromTextFile(FOLDER_LOCATION);
+	}
+	
+	public static void cluster() throws IOException{
+        RedisClusterClient clusterClient = null;
+        List<RedisURI> redisNodes = new ArrayList<RedisURI>();
+        
+        for(String node : redisURLs){
+            String[] keys = node.split(":");
+            redisNodes.add(RedisURI.Builder.redis(keys[0], Integer.valueOf(keys[1])).build());
+        }
+        clusterClient = RedisClusterClient.create(redisNodes);
+        
+        StatefulRedisClusterConnection<String, String> connection2 = clusterClient.connect();
+        
+        System.out.println("Connected to Redis");
+        
+//        connection2.setReadFrom(ReadFrom.SLAVE);
+
+//        RedisAdvancedClusterCommands<String, String> sync = connection2.sync();
+        RedisAdvancedClusterCommands<String, String> sync = connection2.sync();
+        
+        //for set commands
+//        setList(sync);
+        getList(sync);
+        
+
+        connection2.close();
+        clusterClient.shutdown();
+	}
+	
+	public static void byteCluster() throws IOException{
+        RedisClusterClient clusterClient = null;
+//        RedisClient client = null;
+//        RedisAdvancedClusterAsyncCommands<String, String> connection = null;
+        List<RedisURI> redisNodes = new ArrayList<RedisURI>();
+        
+        for(String node : redisURLs){
+            String[] keys = node.split(":");
+            redisNodes.add(RedisURI.Builder.redis(keys[0], Integer.valueOf(keys[1])).build());
+        }
+        clusterClient = RedisClusterClient.create(redisNodes);
+        
+        RedisCodec<String, byte[]> codec = new StringByteArrayCodec();
+        StatefulRedisClusterConnection<String, byte[]> connection2 = clusterClient.connect(codec);
+        
+        System.out.println("Connected to Redis");
+        
+        RedisAdvancedClusterCommands<String, byte[]> sync = connection2.sync();
+        
+//        byteSetList(sync);
+        byteGetList(sync);
+        
+        connection2.close();
+        clusterClient.shutdown();
+	}
+	
+	private static void setList(RedisAdvancedClusterCommands<String, String> sync) throws IOException{
+		String url1;
+		String key;
+		
+		for(String str:listOfMsid){
+			url1 = (URL+str);
+			JsonArray jsonArray = ServiceLayer.readJsonFromUrl(url1);
+			key = str;
+			sync.setex(key, 1800, jsonArray.toString());
+		}
+	}
+	
+	private static void getList(RedisAdvancedClusterCommands<String, String> sync){
+		JSONArray jsonArr = new JSONArray();
+		long startTime, endTime, timeTaken,avg=0;
+		for (String str:listOfMsid){
+        	startTime = System.currentTimeMillis();
+        	jsonArr = new JSONArray(sync.get(str));
+        	endTime = System.currentTimeMillis();
+        	timeTaken = endTime - startTime;
+        	System.out.println("Time Taken for <String, String> stored -> "+ timeTaken);
+        	avg +=timeTaken;
+        }
+		System.out.println("Average time for <String, String> : " + (avg*1.0/listOfMsid.size()));
+	}
+	
+	private static void byteSetList(RedisAdvancedClusterCommands<String, byte[]> sync) throws IOException{
+		String url1;
+		String key;
+		byte[] bytecoded; 
+		for(String str:listOfMsid){
+			url1 = (URL+str);
+			JsonArray jsonArray = ServiceLayer.readJsonFromUrl(url1);
+			bytecoded = jsonArray.toString().getBytes();
+			key = str+"_byte";
+			sync.setex(key, 1800, bytecoded);
+		}
+	}
+	
+	private static void byteGetList(RedisAdvancedClusterCommands<String, byte[]> sync){
+		JSONArray jsonArr = new JSONArray();
+		long startTime, endTime, timeTaken,avg=0;
+		for (String str:listOfMsid){
+        	startTime = System.currentTimeMillis();
+//        	System.out.println(sync.get(str+"_byte"));
+        	jsonArr = toJSONArray(sync.get(str+"_byte"));
+        	endTime = System.currentTimeMillis();
+        	timeTaken = endTime - startTime;
+        	System.out.println("Time Taken for <String, byte[]> stored -> "+ timeTaken);
+        	avg +=timeTaken;
+        }
+		System.out.println("Average time for <String, byte[]> : " + (avg*1.0/listOfMsid.size()));
+	}
+	
+	private static JSONArray toJSONArray(byte[] bArr){
+		 return new JSONArray(new String(bArr));
+	}
+}
+
+
+
+package features;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.cluster.RedisClusterClient;
+import com.lambdaworks.redis.cluster.api.StatefulRedisClusterConnection;
+import com.lambdaworks.redis.cluster.api.async.RedisAdvancedClusterAsyncCommands;
+import com.lambdaworks.redis.cluster.api.sync.RedisAdvancedClusterCommands;
+import com.mongodb.DBObject;
+
+import resources.PropertyFile;
+
+public class LettuceClusterServiceImpl {
+	private String[] redisURLs2;
+	private String keySuffix2;
+	private boolean isAsync2;
+	
+	private String[] redisURLs;
+	private String keySuffix;
+	private boolean isAsync;
+	
+	private RedisClusterClient clusterClient;
+	
+	private StatefulRedisClusterConnection<String, String> connection;
+	private RedisAdvancedClusterCommands<String, String> sync;
+	private RedisAdvancedClusterAsyncCommands<String, String> async;
+	
+	public LettuceClusterServiceImpl(){
+		redisURLs = PropertyFile.redisURLs;
+		keySuffix = PropertyFile.keySuffix;
+		isAsync = PropertyFile.isAsync;
+	}
+	
+//	------------------------------------------------------------------------------------------------------------------------
+//	Setting the Property file values option available, if these method not called, then defaults from PropertyFile taken
+//	------------------------------------------------------------------------------------------------------------------------
+	
+	public void setRedisURLs(String[] arr){
+		redisURLs2 = arr;
+	}
+	
+	public void setKeySuffix(String suffix){
+		keySuffix2 = suffix;
+	}
+	
+	public void setIsAsync(boolean bool){
+		isAsync2 = bool;
+	}
+	
+//	------------------------------------------------------------------------------------------------------------------------
+//	Public (Abstracted) Functions here
+//	------------------------------------------------------------------------------------------------------------------------
+
+	public void initConnection(){
+		//set values as given by user in set functions
+		redisURLs = redisURLs2;
+		keySuffix = keySuffix2;
+		isAsync = isAsync2;
+		
+		initializeClusterClient();
+		connection = clusterClient.connect();
+        if(isAsync){
+        	async = connection.async();
+        }else{
+        	sync = connection.sync();
+        }
+        redisURLs2 = PropertyFile.redisURLs;
+		keySuffix2 = PropertyFile.keySuffix;
+		isAsync2 = PropertyFile.isAsync;
+	}
+	
+	public void killConnection(){
+		if(connection!=null){
+			connection.close();
+		}
+		if(clusterClient!=null){
+			clusterClient.shutdown();
+		}
+	}
+	
+	public List<DBObject> get(LinkedHashMap<String,String> keyMap){
+		String key = getKeyFromMap(keyMap);
+		return get(key);
+	}
+	
+	public List<DBObject> get(String key){
+		String finalKey = addSuffix(key);
+		return getExact(finalKey);
+	}
+	
+	
+	public void set(LinkedHashMap<String,String> keyMap, List<DBObject> listDBObj) throws IOException{
+		String key = getKeyFromMap(keyMap);
+		set(key,listDBObj);
+	}
+	
+	public void set(String key, List<DBObject> listDBObj) throws IOException{
+		String finalKey = addSuffix(key);
+		setExact(finalKey, listDBObj);
+	}
+	
+//	------------------------------------------------------------------------------------------------------------------------
+//	Private Functions here
+//	------------------------------------------------------------------------------------------------------------------------
+	 
+//	private void setExact(String key, List<DBObject> listDBObj) throws IOException{
+//		String BaseURL = "myt.indiatimes.com/mytimes/getFeed/Activity?";
+//		String URL = BaseURL + key;
+//		JsonArray jsonArray = ServiceLayer.readJsonFromUrl(URL);
+//		sync.setex(key, 1800, jsonArray.toString());
+//	}
+	
+	//sets key and listofDbObj as key , value  
+	private void setExact(String key, List<DBObject> listDBObj) throws IOException{
+		JSONArray jsonArray = toJsonArray(listDBObj);
+		String value = jsonArray.toString();
+		if(isAsync){
+			async.setex(key, 1800, value);
+		}else{
+			sync.setex(key, 1800, value);
+		}
+	}
+
+	//retrieves value of the key and converts it to list of DbObj
+	//returns the listOfDbObj if key is available, o/w, returns null
+	private List<DBObject> getExact(String key){
+		String getStr;
+		if(isAsync){
+			getStr = async.get(key).toString();
+		}else{
+			getStr = sync.get(key);
+		}
+		
+		List<DBObject> listDbObj;
+		
+		//getStr is only null if the key does not exist, it is [] if empty
+		if(getStr!=null){
+    		listDbObj = toListDBObj(getStr);
+    		return listDbObj;
+    	}
+		return null;
+	}
+	
+	//initialize the private global variable clusterClient
+	private void initializeClusterClient(){
+		List<RedisURI> redisNodes = new ArrayList<RedisURI>();
+        
+        for(String node : redisURLs){
+            String[] keys = node.split(":");
+            redisNodes.add(RedisURI.Builder.redis(keys[0], Integer.valueOf(keys[1])).build());
+        }
+        clusterClient = RedisClusterClient.create(redisNodes);
+	}
+	
+	//converts LinkedHashMap query params of key to String key
+	private String getKeyFromMap(LinkedHashMap<String,String> map){
+		if(map==null){
+			return null;
+		}
+		Set<String> keys = map.keySet();
+		String returnStr;
+		StringBuilder a = new StringBuilder();
+		for(String k:keys){
+			a.append(k+"="+map.get(k));
+			a.append("&");
+		}
+		returnStr = a.toString();
+		returnStr = returnStr.substring(0,returnStr.length()-1);
+		return returnStr;
+	}
+	
+	//adds suffix to the key 
+	private String addSuffix (String key){
+		return (key + "_" + keySuffix);
+	}
+	
+	//converts list of DBObjects to org.json.JSONArray
+	private JSONArray toJsonArray(List<DBObject> listDBObj) {
+		JSONArray jsonArr = new JSONArray();
+		JSONObject jsonObj;
+		for (int i=0;i<listDBObj.size();i++){
+			jsonObj = (JSONObject) listDBObj.get(i);
+			jsonArr.put(jsonObj);
+		}
+		return jsonArr;
+	}
+		
+	//converts from org.json.JSONArray.toString to List of DBObject
+	private List<DBObject> toListDBObj(String str){
+		 JSONArray jsonArr = new JSONArray(str);
+		 JSONObject jsonObj;
+		 List<DBObject> listDbObj=new ArrayList<DBObject>();
+		 DBObject dbObj;
+		 
+		 for (int index=0;index<jsonArr.length();index++){
+			 jsonObj = jsonArr.getJSONObject(index);
+			 dbObj = (DBObject)jsonObj;
+			 listDbObj.add(dbObj);
+		 }
+		 return listDbObj; 
+	}
+}
+
+

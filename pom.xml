@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>RedisCache</groupId>
+  <artifactId>RedisCache</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>RedisCache</name>
+  
+  <dependencies>
+  		<dependency>
+		  <groupId>biz.paluch.redis</groupId>
+		  <artifactId>lettuce</artifactId>
+		  <version>4.3.0.Final</version>
+		  <classifier>shaded</classifier>
+		  
+		  <exclusions>
+		    <exclusion>
+		      <groupId>io.reactivex</groupId>
+		      <artifactId>rxjava</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>org.latencyutils</groupId>
+		      <artifactId>LatencyUtils</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>io.netty</groupId>
+		      <artifactId>netty-common</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>io.netty</groupId>
+		      <artifactId>netty-transport</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>io.netty</groupId>
+		      <artifactId>netty-handler</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>io.netty</groupId>
+		      <artifactId>netty-codec</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>com.google.guava</groupId>
+		      <artifactId>guava</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>io.netty</groupId>
+		      <artifactId>netty-transport-native-epoll</artifactId>
+		    </exclusion>
+		    <exclusion>
+		      <groupId>org.apache.commons</groupId>
+		      <artifactId>commons-pool2</artifactId>
+		    </exclusion>
+		  </exclusions>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+		<dependency>
+		    <groupId>com.google.code.gson</groupId>
+		    <artifactId>gson</artifactId>
+		    <version>2.8.0</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.json/json -->
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20160810</version>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
+		<dependency>
+		    <groupId>org.mongodb</groupId>
+		    <artifactId>mongo-java-driver</artifactId>
+		    <version>3.4.2</version>
+		</dependency>						
+	</dependencies>
+	
+</project>

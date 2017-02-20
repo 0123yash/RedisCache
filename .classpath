@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry including="**/*.java" kind="src" output="target/test-classes" path="src/test/java"/>
+	<classpathentry excluding="**/*.java" kind="src" output="target/test-classes" path="src/test/resources"/>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/biz/paluch/redis/lettuce/4.3.0.Final/lettuce-4.3.0.Final-shaded.jar" sourcepath="SOURCE_ATTACHER/lettuce-4.3.0.Final-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar" sourcepath="M2_REPO/com/google/code/gson/gson/2.8.0/gson-2.8.0-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/json/json/20160810/json-20160810.jar" sourcepath="M2_REPO/org/json/json/20160810/json-20160810-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mongodb/mongo-java-driver/3.4.2/mongo-java-driver-3.4.2.jar" sourcepath="M2_REPO/org/mongodb/mongo-java-driver/3.4.2/mongo-java-driver-3.4.2-sources.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
