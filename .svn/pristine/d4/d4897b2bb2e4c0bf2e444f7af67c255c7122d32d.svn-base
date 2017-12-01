@@ -1,0 +1,50 @@
+
+//        clusterClient.setOptions(new ClusterClientOptions.Builder()
+//                .refreshClusterView(true)
+//                .refreshPeriod(1, TimeUnit.MINUTES)
+//                .build());
+//        System.out.println(clusterClient.getPartitions().toString());
+//        StatefulRedisClusterConnection<String, String> connection2 = clusterClient.connect();
+//        
+//        System.out.println("Connected to Redis");
+//        
+//        connection2.close();
+//        
+//        clusterClient.shutdown();
+        
+        
+        
+//        
+////        ClusterTopologyRefresh topology = new ClusterTopologyRefresh();
+//        
+//        
+//        StatefulRedisClusterConnection<String, String> connection2 = clusterClient.connect();
+//
+//        System.out.println("Connected to Redis");
+//
+//        
+//        connection2.close();
+//        clusterClient.shutdown();
+
+
+
+//	    RedisClusterClient clusterClient = new RedisClusterClient(RedisURI.create("redis://192.168.27.158:7001"));
+////	    RedisClient clusterClient = RedisClient.create(RedisURI.create("redis://192.168.27.238:7001"));
+//	    RedisAdvancedClusterConnection<String, String> cluster = clusterClient.connectCluster();
+//	
+//	    cluster.set("key", "value");
+//	    System.out.println(cluster.get("key"));
+//	
+//	    cluster.close();
+//	    clusterClient.shutdown();
+//	    
+//	    RedisClient client = RedisClient.create("redis://192.168.27.158:7001");          
+//
+//	    RedisStringsConnection<String, String> connection = client.connect();  
+//
+//	    String value = connection.get("foo");                                  
+//
+//	    connection.close();                                                    
+//
+//	    client.shutdown();
+	    

@@ -71,7 +71,19 @@
 		    <groupId>org.mongodb</groupId>
 		    <artifactId>mongo-java-driver</artifactId>
 		    <version>3.4.2</version>
-		</dependency>						
+		</dependency>		
+		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+		<dependency>
+		    <groupId>org.springframework.data</groupId>
+		    <artifactId>spring-data-redis</artifactId>
+		    <version>1.0.0.RELEASE</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>com.cedarsoftware</groupId>
+		  <artifactId>json-io</artifactId>
+		  <version>4.9.8</version>
+		</dependency>	
 	</dependencies>
 	
 </project>
